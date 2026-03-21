@@ -139,13 +139,12 @@ func (e *BambooEngine) generateTransformations(composition []*Transformation, lo
 }
 
 func (e *BambooEngine) applyUIShortcuts(syllable []*Transformation) []*Transformation {
-	var transformations []*Transformation
 	// Implement the uwo+ typing shortcut by creating a virtual
 	// Mark.HORN rule that targets 'u' or 'o'.
 	if virtualTrans := e.applyUowShortcut(syllable); virtualTrans != nil {
-		transformations = append(transformations, virtualTrans)
+		return []*Transformation{virtualTrans}
 	}
-	return transformations
+	return nil
 }
 
 func (e *BambooEngine) newComposition(composition []*Transformation, key rune, isUpperCase bool) []*Transformation {
@@ -237,26 +236,13 @@ func (e *BambooEngine) RemoveLastChar(refreshLastTone bool) {
 }
 
 func (e *BambooEngine) handleBackspace() {
-	var lastAppending = findLastAppendingTrans(e.composition)
-	if lastAppending == nil {
-		if len(e.composition) > 0 {
-			e.composition = e.composition[:len(e.composition)-1]
-		}
+	if len(e.composition) == 0 {
 		return
 	}
-	if !e.CanProcessKey(lastAppending.Rule.Key) {
+	e.composition = e.composition[:len(e.composition)-1]
+	for len(e.composition) > 0 && e.composition[len(e.composition)-1].Rule.Key == 0 {
 		e.composition = e.composition[:len(e.composition)-1]
-		return
 	}
-	var previous, lastComb = extractLastWord(e.composition, e.GetInputMethod().Keys)
-	var newComb []*Transformation
-	for _, t := range lastComb {
-		if t.Target == lastAppending || t == lastAppending {
-			continue
-		}
-		newComb = append(newComb, t)
-	}
-	e.composition = append(previous, newComb...)
 }
 
 /***** END SIDE-EFFECT METHODS ******/
