@@ -98,9 +98,6 @@ func (e *BambooEngine) GetProcessedString(mode Mode) string {
 }
 
 func (e *BambooEngine) getApplicableRules(key rune) []Rule {
-	if !e.CanProcessKey(key) {
-		return nil
-	}
 	var applicableRules []Rule
 	for _, inputRule := range e.inputMethod.Rules {
 		if inputRule.Key == unicode.ToLower(key) {
@@ -125,7 +122,12 @@ func (e *BambooEngine) generateTransformations(composition []*Transformation, lo
 		// transformation fall-backs to an APPENDING one.
 		transformations = generateFallbackTransformations(composition, e.getApplicableRules(lowerKey), lowerKey, isUpperCase)
 		var newComposition = append(composition, transformations...)
-		transformations = append(transformations, e.applyUIShortcuts(newComposition)...)
+
+		// Implement the uwo+ typing shortcut by creating a virtual
+		// Mark.HORN rule that targets 'u' or 'o'.
+		if virtualTrans := e.applyUowShortcut(newComposition); virtualTrans != nil {
+			transformations = append(transformations, virtualTrans)
+		}
 	}
 	/**
 	* Sometimes, a tone's position in a previous state must be changed to fit the new state
@@ -136,15 +138,6 @@ func (e *BambooEngine) generateTransformations(composition []*Transformation, lo
 	**/
 	transformations = append(transformations, e.refreshLastToneTarget(append(composition, transformations...))...)
 	return transformations
-}
-
-func (e *BambooEngine) applyUIShortcuts(syllable []*Transformation) []*Transformation {
-	// Implement the uwo+ typing shortcut by creating a virtual
-	// Mark.HORN rule that targets 'u' or 'o'.
-	if virtualTrans := e.applyUowShortcut(syllable); virtualTrans != nil {
-		return []*Transformation{virtualTrans}
-	}
-	return nil
 }
 
 func (e *BambooEngine) newComposition(composition []*Transformation, key rune, isUpperCase bool) []*Transformation {
@@ -191,10 +184,6 @@ func (e *BambooEngine) ProcessString(str string, mode Mode) {
 func (e *BambooEngine) ProcessKey(key rune, mode Mode) {
 	var lowerKey = unicode.ToLower(key)
 	var isUpperCase = unicode.IsUpper(key)
-	if mode&EnglishMode == 0 && (key == '\b' || key == 0x7f) {
-		e.handleBackspace()
-		return
-	}
 	if mode&EnglishMode != 0 || !e.CanProcessKey(lowerKey) {
 		if mode&InReverseOrder != 0 {
 			e.composition = append([]*Transformation{newAppendingTrans(lowerKey, isUpperCase)}, e.composition...)
@@ -228,21 +217,27 @@ func (e *BambooEngine) Reset() {
 
 // Find the last APPENDING transformation and all
 // the transformations that add effects to it.
-func (e *BambooEngine) RemoveLastChar(refreshLastTone bool) {
-	e.handleBackspace()
-	if refreshLastTone {
-		e.composition = append(e.composition, e.refreshLastToneTarget(e.composition)...)
-	}
-}
-
-func (e *BambooEngine) handleBackspace() {
-	if len(e.composition) == 0 {
+func (e *BambooEngine) RemoveLastChar(refreshLastToneTarget bool) {
+	var lastAppending = findLastAppendingTrans(e.composition)
+	if lastAppending == nil {
 		return
 	}
-	e.composition = e.composition[:len(e.composition)-1]
-	for len(e.composition) > 0 && e.composition[len(e.composition)-1].Rule.Key == 0 {
+	if !e.CanProcessKey(lastAppending.Rule.Key) {
 		e.composition = e.composition[:len(e.composition)-1]
+		return
 	}
+	var previous, lastComb = extractLastWord(e.composition, e.GetInputMethod().Keys)
+	var newComb []*Transformation
+	for _, t := range lastComb {
+		if t.Target == lastAppending || t == lastAppending {
+			continue
+		}
+		newComb = append(newComb, t)
+	}
+	if refreshLastToneTarget {
+		newComb = append(newComb, e.refreshLastToneTarget(newComb)...)
+	}
+	e.composition = append(previous, newComb...)
 }
 
 /***** END SIDE-EFFECT METHODS ******/

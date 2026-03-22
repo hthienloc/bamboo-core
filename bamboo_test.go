@@ -75,8 +75,8 @@ func TestProcessThuowString(t *testing.T) {
 		t.Errorf("Process [Thuow], got [%s] expected [%s]", ng.GetProcessedString(VietnameseMode), "Thuơ")
 	}
 	ng.RemoveLastChar(true)
-	if ng.GetProcessedString(VietnameseMode) != "Thuo" {
-		t.Errorf("Process [Thuow] and remove last char, got [%s] expected [%s]", ng.GetProcessedString(VietnameseMode), "Thuo")
+	if ng.GetProcessedString(VietnameseMode) != "Thu" {
+		t.Errorf("Process [Thuow] and remove last char, got [%s] expected [%s]", ng.GetProcessedString(VietnameseMode), "Thu")
 	}
 }
 
@@ -90,13 +90,13 @@ func TestBambooEngine_RemoveLastChar(t *testing.T) {
 		t.Errorf("Process [loanj], got [%s] expected [loạn]", ng.GetProcessedString(VietnameseMode))
 	}
 	ng.RemoveLastChar(true)
-	if ng.GetProcessedString(VietnameseMode) != "loan" {
-		t.Errorf("Process [loanj-1], got [%s] expected [loan]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "lọa" {
+		t.Errorf("Process [loanj-1], got [%s] expected [lọa]", ng.GetProcessedString(VietnameseMode))
 	}
 	ng.ProcessString(":", EnglishMode)
 	ng.RemoveLastChar(true)
-	if ng.GetProcessedString(VietnameseMode) != "loan" {
-		t.Errorf("Process [loanj-1], got [%s] expected [loan]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "lọa" {
+		t.Errorf("Process [loanj-1], got [%s] expected [lọa]", ng.GetProcessedString(VietnameseMode))
 	}
 }
 
@@ -107,12 +107,12 @@ func TestProcessUpperString(t *testing.T) {
 		t.Errorf("Process [VIEETJ], got [%s] expected [VIỆT]", ng.GetProcessedString(VietnameseMode))
 	}
 	ng.RemoveLastChar(false)
-	if ng.GetProcessedString(VietnameseMode) != "VIÊT" {
-		t.Errorf("Process remove last char of upper string, got [%s] expected [VIÊT]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "VIỆ" {
+		t.Errorf("Process remove last char of upper string, got [%s] expected [VIỆ]", ng.GetProcessedString(VietnameseMode))
 	}
 	ng.ProcessKey('Q', VietnameseMode)
-	if ng.GetProcessedString(EnglishMode) != "VIEETQ" {
-		t.Errorf("Process remove last char of upper string, got [%s] expected [VIEETQ]", ng.GetProcessedString(EnglishMode))
+	if ng.GetProcessedString(EnglishMode) != "VIEEJQ" {
+		t.Errorf("Process remove last char of upper string, got [%s] expected [VIEEJQ]", ng.GetProcessedString(EnglishMode))
 	}
 	ng.Reset()
 	ng.ProcessString("IB", EnglishMode)
@@ -196,8 +196,8 @@ func TestRemoveLastChar(t *testing.T) {
 	ng := newStdEngine()
 	ng.ProcessString("hanhj", VietnameseMode)
 	ng.RemoveLastChar(true)
-	if ng.GetProcessedString(VietnameseMode) != "hanh" {
-		t.Errorf("Process [hanhj], got [%s] expected [hanh]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "hạn" {
+		t.Errorf("Process [hanhj], got [%s] expected [%s]", ng.GetProcessedString(VietnameseMode), "hạn")
 	}
 	ng.Reset()
 }
@@ -300,8 +300,8 @@ func TestProcessRefresh2(t *testing.T) {
 	ng.ProcessString("reff", VietnameseMode)
 	ng.RemoveLastChar(true)
 	ng.ProcessKey('f', VietnameseMode)
-	if ng.GetProcessedString(VietnameseMode) != "ref" {
-		t.Errorf("Process reff-1+f, got [%v] expected [ref]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "rè" {
+		t.Errorf("Process reff-1+f, got [%v] expected [rè]", ng.GetProcessedString(VietnameseMode))
 	}
 }
 
@@ -606,8 +606,8 @@ func TestDoubleTyping(t *testing.T) {
 	ng.RemoveLastChar(true)
 	ng.RemoveLastChar(true)
 	// ng.ProcessString("r", VietnameseMode)
-	if ng.GetProcessedString(VietnameseMode) != "tủy" {
-		t.Errorf("Process turyen,BS,BS,BS,r, got [%s] expected [tủy]", ng.GetProcessedString(VietnameseMode))
+	if ng.GetProcessedString(VietnameseMode) != "tủ" {
+		t.Errorf("Process turyen,BS,BS,BS,r, got [%s] expected [tủ]", ng.GetProcessedString(VietnameseMode))
 	}
 	ng.Reset()
 	ng.ProcessString("chuyển", VietnameseMode)
@@ -645,40 +645,6 @@ func TestDoubleTyping(t *testing.T) {
 }
 
 var ng = newStdEngine()
-
-func TestProcessKey_Backspace(t *testing.T) {
-	e := newStdEngine()
-	e.ProcessString("chao", VietnameseMode)
-	if e.GetProcessedString(VietnameseMode) != "chao" {
-		t.Errorf("Expected chao, got %s", e.GetProcessedString(VietnameseMode))
-	}
-	e.ProcessKey('s', VietnameseMode)
-	if e.GetProcessedString(VietnameseMode) != "cháo" {
-		t.Errorf("Expected cháo, got %s", e.GetProcessedString(VietnameseMode))
-	}
-	e.ProcessKey('\b', VietnameseMode)
-	if e.GetProcessedString(VietnameseMode) != "chao" {
-		t.Errorf("Expected chao after backspace, got %s", e.GetProcessedString(VietnameseMode))
-	}
-}
-
-func TestGetApplicableRules_Invalid(t *testing.T) {
-	e := newStdEngine().(*BambooEngine)
-	rules := e.getApplicableRules('😊')
-	if rules != nil {
-		t.Errorf("Expected nil rules for emoji, got %v", rules)
-	}
-}
-
-func TestCanProcessKey_Invalid(t *testing.T) {
-	e := newStdEngine()
-	if e.CanProcessKey('😊') {
-		t.Error("Expected CanProcessKey to return false for emoji")
-	}
-	if !e.CanProcessKey('a') {
-		t.Error("Expected CanProcessKey to return true for 'a'")
-	}
-}
 
 func BenchmarkRemoveLastChar(b *testing.B) {
 	b.ReportAllocs()
