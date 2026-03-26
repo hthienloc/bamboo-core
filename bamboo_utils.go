@@ -191,8 +191,8 @@ func extractAtomicTrans(composition, last []*Transformation, lastIsVowel bool) (
 }
 
 /*
-   Separate a string into smaller parts: first consonant (or head), vowel,
-   last consonant (if any).
+Separate a string into smaller parts: first consonant (or head), vowel,
+last consonant (if any).
 */
 func extractCvcAppendingTrans(composition []*Transformation) ([]*Transformation, []*Transformation, []*Transformation) {
 	head, lastConsonant := extractAtomicTrans(composition, nil, false)
@@ -440,22 +440,24 @@ func generateTransformations(composition []*Transformation, applicableRules []Ru
 		// Implement ươ/ưo(i/c/ng) + o -> uô
 		if regUhO.MatchString(Flatten(composition, VietnameseMode|ToneLess|LowerCase)) {
 			var vowels = filterAppendingComposition(getRightMostVowels(composition))
-			var trans = &Transformation{
-				Target: vowels[0],
-				Rule: Rule{
-					EffectType: MarkTransformation,
-					Key:        0,
-					Effect:     uint8(MarkNone),
-				},
-			}
-			if target, applicableRule := findTarget(append(composition, trans), applicableRules, flags); target != nil && target != vowels[0] {
-				transformations = append(transformations, trans)
-				transformations = append(transformations, &Transformation{
-					Rule:        applicableRule,
-					Target:      target,
-					IsUpperCase: isUpperCase,
-				})
-				return transformations
+			if len(vowels) > 0 {
+				var trans = &Transformation{
+					Target: vowels[0],
+					Rule: Rule{
+						EffectType: MarkTransformation,
+						Key:        0,
+						Effect:     uint8(MarkNone),
+					},
+				}
+				if target, applicableRule := findTarget(append(composition, trans), applicableRules, flags); target != nil && target != vowels[0] {
+					transformations = append(transformations, trans)
+					transformations = append(transformations, &Transformation{
+						Rule:        applicableRule,
+						Target:      target,
+						IsUpperCase: isUpperCase,
+					})
+					return transformations
+				}
 			}
 		}
 		if undoTrans := generateUndoTransformations(composition, applicableRules, flags); len(undoTrans) > 0 {
