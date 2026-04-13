@@ -1,5 +1,0 @@
---- FAIL: TestEw2uEnabled (0.00s)
-    bamboo_test.go:656: Ew2uEnabled OFF: Process [w], got [ư] expected [w]
-FAIL
-FAIL	github.com/BambooEngine/bamboo-core	0.215s
-FAIL
