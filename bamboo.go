@@ -60,13 +60,14 @@ type BambooEngine struct {
 	composition []*Transformation
 	inputMethod InputMethod
 	flags       uint
-	w2uMode     int // 0: Disabled, 1: Middle-Only, 2: Everywhere
+	w2uMode     int // -1: Follow flags, 0: Disabled, 1: Middle-Only, 2: Everywhere
 }
 
 func NewEngine(inputMethod InputMethod, flag uint) IEngine {
 	engine := BambooEngine{
 		inputMethod: inputMethod,
 		flags:       flag,
+		w2uMode:     -1,
 	}
 	return &engine
 }
@@ -131,8 +132,10 @@ func (e *BambooEngine) generateTransformations(composition []*Transformation, lo
 		transformations = generateFallbackTransformations(composition, e.getApplicableRules(lowerKey), lowerKey, isUpperCase)
 		
 		// Unified Modular W2U Logic
-		canApplyW2U := false
-		if e.w2uMode == 1 {
+		var canApplyW2U bool
+		if e.w2uMode == -1 {
+			canApplyW2U = e.flags&Ew2uEnabled != 0
+		} else if e.w2uMode == 1 {
 			if len(composition) > 0 {
 				canApplyW2U = true
 			}
