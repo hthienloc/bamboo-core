@@ -29,7 +29,7 @@ const (
 const (
 	W2uFollowFlags = -1
 	W2uDisabled    = 0
-	W2uMiddleOnly  = 1
+	W2uNonStart    = 1
 	W2uEverywhere  = 2
 )
 
@@ -67,7 +67,7 @@ type BambooEngine struct {
 	composition []*Transformation
 	inputMethod InputMethod
 	flags       uint
-	w2uMode     int // W2uFollowFlags, W2uDisabled, W2uMiddleOnly, W2uEverywhere
+	w2uMode     int // W2uFollowFlags, W2uDisabled, W2uNonStart, W2uEverywhere
 }
 
 func NewEngine(inputMethod InputMethod, flag uint) IEngine {
@@ -142,7 +142,7 @@ func (e *BambooEngine) generateTransformations(composition []*Transformation, lo
 		
 		// Unified Modular W2U Logic
 		canApplyW2U := (e.w2uMode == W2uEverywhere) ||
-			(e.w2uMode == W2uMiddleOnly && len(composition) > 0) ||
+			(e.w2uMode == W2uNonStart && len(composition) > 0) ||
 			(e.w2uMode == W2uFollowFlags && e.flags&Ew2uEnabled != 0)
 
 		if canApplyW2U && lowerKey == 'w' && len(transformations) > 0 {
